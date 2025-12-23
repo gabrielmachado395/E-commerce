@@ -1590,6 +1590,28 @@ function inicializarAnimateOnScroll() {
     }
 }
 
+function inicializarStaggeredOnScroll(gridSelector, itemSelector = '.stagerred-on-scroll', delay = 180){
+    const grid = typeof gridSelector === 'string' ? document.querySelector(gridSelector) : gridSelector;
+    if (!grid) return;
+    const itens = grid.querySelectorAll(itemSelector);
+    if (!itens.length) return;
+
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                itens.forEach((item, idx) => {
+                    setTimeout(() => {
+                        item.classList.add('is-visible');
+                    }, idx * delay);
+                });
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.2 });
+
+    observer.observe(grid);
+}
+
 // Função principal da área do Vídeo, ela quem deixa o vídeo como um espaço exclusivo para o vídeo
 function inicializarHeaderIndex() {
     const topHeader = document.getElementById('mainHeader');
@@ -1688,6 +1710,7 @@ function inicializarModoClaro() {
 
 // Função principal de inicialização da página
 async function inicializarPagina() {
+    inicializarStaggeredOnScroll('.diferenciais-grid', '.diferencial-item.stagerred-on-scroll');
     // Carrega todos os componentes em paralelo e espera que todos terminem
     await Promise.all([
         carregarComponente('header-placeholder', 'header.html', inicializarPesquisa),
@@ -2082,31 +2105,32 @@ function renderCategoriaPage() {
     try { categoria = decodeURIComponent(categoria); } catch (_) {}
     const catNorm = normalizeCategoria(categoria);
 
+    // Mapeamento de imagens por categoria
+    const imagensCategoria = {
+        'Alça': 'img/Categorias/teste.webp',
+        'Base': 'img/Categorias/teste.webp',
+        'Elásticos Crus': 'img/Categorias/teste.webp',
+        'Modeladores': 'img/Categorias/teste.webp',
+        'Personalizados': 'img/Categorias/teste.webp',
+        'Premium': 'img/Categorias/teste.webp',
+        'Rendas': 'img/Categorias/teste.webp',
+        'Viés': 'img/Categorias/teste.webp',
+        'Viés Com Arco': 'img/Categorias/teste.webp'
+        // Adicione mais conforme necessário
+    };
+
+    // Seleciona o elemento correto da imagem
+    const imgEl = document.getElementById('categoria-image');
+    if (imgEl) {
+        imgEl.src = imagensCategoria[catNorm] || 'img/categorias/default.jpg';
+        imgEl.alt = catNorm;
+        imgEl.style.display = 'block';
+    }
+
     const container = document.getElementById('categoria-container');
     if (!container) return;
 
-    // Título
-    const titulo = document.getElementById('categoria-title');
-    if (titulo) titulo.textContent = catNorm;
-
-    // Descrição por categoria (texto curto e único para não deixar vazio)
-    const descEl = document.getElementById('categoria-description');
-    if (descEl) {
-        const descricoes = {
-            'Alça': 'Alças técnicas desenvolvidas para oferecer sustentação, conforto e estética nas suas peças. Do dia a dia ao luxo, nossa linha equilibra resistência, toque agradável e caimento perfeito para diferentes propostas de design.',
-            'Base': 'Bases pensadas para estruturar cós, bustos e barras com estabilidade dimensional e elasticidade controlada. Soluções que dão forma e longevidade às peças, sem abrir mão do conforto e do acabamento premium.',
-            'Elásticos Crus': 'Matérias‑primas em seu estado natural para quem cria e produz com liberdade. Elásticos crus prontos para tingimento e acabamento, com alta resistência, estabilidade e desempenho industrial consistente.',
-            'Modeladores': 'Materiais com compressão e recuperação elástica pensados para modelar com precisão. Ideais para peças que pedem suporte firme, definição de silhueta e conforto durante o uso prolongado.',
-            'Personalizados': 'Acabamentos sob medida que colocam a sua marca em evidência. Estampas, padrões e cores exclusivos, com a nossa qualidade técnica para garantir durabilidade, fidelidade de cor e alto valor percebido.',
-            'Premium': 'Linha premium com toque sofisticado, brilho equilibrado e performance elevada. Produtos que unem estética e durabilidade para coleções de alto padrão e peças que pedem acabamento impecável.',
-            'Rendas': 'Rendas com desenho marcante, toque macio e excelente estabilidade. Beleza e funcionalidade lado a lado para compor detalhes, recortes e acabamentos que elevam o visual das suas criações.',
-            'Viés': 'Vieses versáteis para reforço de costuras, contornos e acabamentos limpos. Maleáveis, resistentes e fáceis de aplicar, garantem resultado profissional em peças do básico ao sofisticado.',
-            'Viés Com Arco': 'Vieses com arco integrado para dar suporte localizado e manter a forma da peça. Perfeitos para sutiãs, corsets e modeladores, combinando estrutura, conforto e acabamento discreto.'
-        };
-        descEl.textContent = descricoes[catNorm] || 'Produtos selecionados para atender diferentes necessidades de criação e produção, combinando desempenho técnico, conforto e acabamento de alto nível.';
-    }
-
-    // Filtra produtos
+    // CORREÇÃO: filtra os produtos da categoria
     const itens = produtos.filter(p => normalizeCategoria(p.categoria) === catNorm);
 
     if (!itens.length) {
@@ -2143,4 +2167,4 @@ function renderCategoriaPage() {
     container.innerHTML = '';
     container.appendChild(frag);
 }
-
+// ...existing code...
